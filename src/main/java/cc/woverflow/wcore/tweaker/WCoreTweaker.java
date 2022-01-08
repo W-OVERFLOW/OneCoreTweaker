@@ -40,7 +40,7 @@ public class WCoreTweaker implements IFMLLoadingPlugin {
             });
 
     {
-        File loadLocation = new File(new File(new File(Launch.minecraftHome, "W-OVERFLOW"), "W-CORE"), "CoreDownloader.jar");
+        File loadLocation = new File(new File(new File(Launch.minecraftHome, "W-OVERFLOW"), "W-CORE"), "CoreLoader.jar");
         try {
             if (!loadLocation.getParentFile().exists()) loadLocation.getParentFile().mkdirs();
             Supplier<String> supplier = () -> {
@@ -120,7 +120,7 @@ public class WCoreTweaker implements IFMLLoadingPlugin {
                 null,
                 "W-CORE has failed to download!\n" +
                         "This may be because the servers are down.\n" +
-                        "For more information, please join our discord server: https://discord.gg/w-overflow/\n" +
+                        "For more information, please join our discord server: https://woverflow.cc/discord\n" +
                         "or try again later.",
                 "W-CORE has failed!", JOptionPane.ERROR_MESSAGE
         );
