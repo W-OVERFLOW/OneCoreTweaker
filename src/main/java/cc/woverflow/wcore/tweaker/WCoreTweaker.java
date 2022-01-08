@@ -40,7 +40,7 @@ public class WCoreTweaker implements IFMLLoadingPlugin {
             });
 
     {
-        File loadLocation = new File(new File(new File(Launch.minecraftHome, "W-OVERFLOW"), "W-CORE"), "CoreLoader.jar");
+        File loadLocation = new File(new File(new File(Launch.minecraftHome, "W-OVERFLOW"), "W-CORE"), "W-CORE-LOADER.jar");
         try {
             if (!loadLocation.getParentFile().exists()) loadLocation.getParentFile().mkdirs();
             Supplier<String> supplier = () -> {
@@ -61,11 +61,11 @@ public class WCoreTweaker implements IFMLLoadingPlugin {
                 return "";
             };
             JsonObject json = new JsonParser().parse(supplier.get()).getAsJsonObject();
-            if (json.has("coredownloader")) {
-                if (!loadLocation.exists() || !getChecksumOfFile(loadLocation.getPath()).equals(json.get("checksum").getAsString())) {
+            if (json.has("loader")) {
+                if (!loadLocation.exists() || !getChecksumOfFile(loadLocation.getPath()).equals(json.get("checksum_loader").getAsString())) {
                     System.out.println("Downloading / updating W-CORE updater...");
                     FileUtils.copyURLToFile(
-                            new URL(json.get("coredownloader").getAsString()),
+                            new URL(json.get("loader").getAsString()),
                             loadLocation,
                             5000,
                             5000);
