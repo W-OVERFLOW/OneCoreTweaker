@@ -25,4 +25,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = "W-CORE-TWEAKER"
+rootProject.name = "w-core-tweaker"

@@ -5,7 +5,6 @@ import com.google.gson.JsonParser;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraftforge.fml.relauncher.CoreModManager;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
-import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpResponse;
@@ -20,6 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import javax.swing.*;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -33,7 +33,7 @@ public class WCoreTweaker implements IFMLLoadingPlugin {
     private IFMLLoadingPlugin loader = null;
 
     private final HttpClientBuilder builder =
-            HttpClients.custom().setUserAgent("WCore/1.0.0")
+            HttpClients.custom().setUserAgent("WCore/1.0.1")
             .addInterceptorFirst((HttpRequestInterceptor) (request, context) -> {
                 if (!request.containsHeader("Pragma")) request.addHeader("Pragma", "no-cache");
                 if (!request.containsHeader("Cache-Control")) request.addHeader("Cache-Control", "no-cache");
@@ -41,6 +41,7 @@ public class WCoreTweaker implements IFMLLoadingPlugin {
 
     {
         File loadLocation = new File(new File(new File(Launch.minecraftHome, "W-OVERFLOW"), "W-CORE"), "W-CORE-LOADER.jar");
+        JsonObject json = null;
         try {
             if (!loadLocation.getParentFile().exists()) loadLocation.getParentFile().mkdirs();
             Supplier<String> supplier = () -> {
@@ -60,15 +61,15 @@ public class WCoreTweaker implements IFMLLoadingPlugin {
                 }
                 return "";
             };
-            JsonObject json = new JsonParser().parse(supplier.get()).getAsJsonObject();
+            json = new JsonParser().parse(supplier.get()).getAsJsonObject();
             if (json.has("loader")) {
                 if (!loadLocation.exists() || !getChecksumOfFile(loadLocation.getPath()).equals(json.get("checksum_loader").getAsString())) {
                     System.out.println("Downloading / updating W-CORE updater...");
-                    FileUtils.copyURLToFile(
-                            new URL(json.get("loader").getAsString()),
-                            loadLocation,
-                            5000,
-                            5000);
+                    if (!download(json.get("loader").getAsString(), loadLocation)) {
+                        if (!loadLocation.exists()) {
+                            showErrorScreen();
+                        }
+                    }
                 }
             } else {
                 // oh
@@ -83,15 +84,17 @@ public class WCoreTweaker implements IFMLLoadingPlugin {
             }
         }
 
-        try {
-            URL fileURL = loadLocation.toURI().toURL();
-            if (!Launch.classLoader.getSources().contains(fileURL)) {
-                Launch.classLoader.addURL(fileURL);
+        if (json != null) {
+            try {
+                URL fileURL = loadLocation.toURI().toURL();
+                if (!Launch.classLoader.getSources().contains(fileURL)) {
+                    Launch.classLoader.addURL(fileURL);
+                }
+                loader = ((IFMLLoadingPlugin) Launch.classLoader.findClass(json.getAsJsonObject("classpath").get("loader").getAsString()).newInstance());
+            } catch (Throwable e) {
+                e.printStackTrace();
+                showErrorScreen();
             }
-            loader = ((IFMLLoadingPlugin) Launch.classLoader.findClass("cc.woverflow.wcore.loader.WCoreLoader").newInstance());
-        } catch (Throwable e) {
-            e.printStackTrace();
-            showErrorScreen();
         }
 
         CodeSource codeSource = this.getClass().getProtectionDomain().getCodeSource();
@@ -158,6 +161,24 @@ public class WCoreTweaker implements IFMLLoadingPlugin {
                     .substring(1));
         }
         return stringBuffer.toString();
+    }
+
+    private boolean download(String url, File file) {
+        if (file.exists()) return true;
+        url = url.replace(" ", "%20");
+        try (FileOutputStream fileOut = new FileOutputStream(file)) {
+            HttpResponse downloadResponse = builder.build().execute(new HttpGet(url));
+            byte[] buffer = new byte[1024];
+
+            int read;
+            while ((read = downloadResponse.getEntity().getContent().read(buffer)) > 0) {
+                fileOut.write(buffer, 0, read);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 
     @Override
