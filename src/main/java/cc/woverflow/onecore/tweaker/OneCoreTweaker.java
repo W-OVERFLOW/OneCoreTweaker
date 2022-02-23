@@ -23,13 +23,12 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.util.List;
-import java.util.function.Supplier;
 
 public class OneCoreTweaker implements ITweaker {
 
     private ITweaker loader = null;
 
-    private final HttpClientBuilder builder =
+    private static final HttpClientBuilder builder =
             HttpClients.custom().setUserAgent("OneCore/1.1.1")
             .addInterceptorFirst((HttpRequestInterceptor) (request, context) -> {
                 if (!request.containsHeader("Pragma")) request.addHeader("Pragma", "no-cache");
@@ -43,21 +42,7 @@ public class OneCoreTweaker implements ITweaker {
             JsonObject json = null;
             try {
                 if (!loadLocation.getParentFile().exists()) loadLocation.getParentFile().mkdirs();
-                Supplier<String> supplier = () -> {
-                    try (CloseableHttpClient client = builder.build()) {
-                        HttpGet request = new HttpGet(new URL("https://woverflow.cc/static/data/onecore.json").toURI());
-                        request.setProtocolVersion(HttpVersion.HTTP_1_1);
-                        HttpResponse response = client.execute(request);
-                        HttpEntity entity = response.getEntity();
-                        if (response.getStatusLine().getStatusCode() == 200) {
-                            return EntityUtils.toString(entity);
-                        }
-                    } catch (Throwable ex) {
-                        ex.printStackTrace();
-                    }
-                    return "ERROR";
-                };
-                String theJson = supplier.get();
+                String theJson = getJson();
                 if (theJson.equals("ERROR")) {
                     if (!loadLocation.exists()) {
                         showErrorScreen();
@@ -68,7 +53,6 @@ public class OneCoreTweaker implements ITweaker {
                         }
                         loader = ((ITweaker) Launch.classLoader.findClass("cc.woverflow.onecore.loader.OneCoreLoader").newInstance());
                     }
-                    return;
                 }
                 json = new JsonParser().parse(theJson).getAsJsonObject();
                 if (json.has("loader")) {
@@ -106,6 +90,21 @@ public class OneCoreTweaker implements ITweaker {
                 }
             }
         }
+    }
+
+    private static String getJson() {
+        try (CloseableHttpClient client = builder.build()) {
+            HttpGet request = new HttpGet(new URL("https://woverflow.cc/static/data/onecore.json").toURI());
+            request.setProtocolVersion(HttpVersion.HTTP_1_1);
+            HttpResponse response = client.execute(request);
+            HttpEntity entity = response.getEntity();
+            if (response.getStatusLine().getStatusCode() == 200) {
+                return EntityUtils.toString(entity);
+            }
+        } catch (Throwable ex) {
+            ex.printStackTrace();
+        }
+        return "ERROR";
     }
 
     private static void showErrorScreen() {
