@@ -30,7 +30,7 @@ public class OneCoreTweaker implements ITweaker {
     private ITweaker loader = null;
 
     private final HttpClientBuilder builder =
-            HttpClients.custom().setUserAgent("OneCore/1.1.0")
+            HttpClients.custom().setUserAgent("OneCore/1.1.1")
             .addInterceptorFirst((HttpRequestInterceptor) (request, context) -> {
                 if (!request.containsHeader("Pragma")) request.addHeader("Pragma", "no-cache");
                 if (!request.containsHeader("Cache-Control")) request.addHeader("Cache-Control", "no-cache");
@@ -55,12 +55,22 @@ public class OneCoreTweaker implements ITweaker {
                     } catch (Throwable ex) {
                         ex.printStackTrace();
                     }
+                    return "ERROR";
+                };
+                String theJson = supplier.get();
+                if (theJson.equals("ERROR")) {
                     if (!loadLocation.exists()) {
                         showErrorScreen();
+                    } else {
+                        URL fileURL = loadLocation.toURI().toURL();
+                        if (!Launch.classLoader.getSources().contains(fileURL)) {
+                            Launch.classLoader.addURL(fileURL);
+                        }
+                        loader = ((ITweaker) Launch.classLoader.findClass("cc.woverflow.onecore.loader.OneCoreLoader").newInstance());
                     }
-                    return "";
-                };
-                json = new JsonParser().parse(supplier.get()).getAsJsonObject();
+                    return;
+                }
+                json = new JsonParser().parse(theJson).getAsJsonObject();
                 if (json.has("loader")) {
                     if (!loadLocation.exists() || !getChecksumOfFile(loadLocation.getPath()).equals(json.get("checksum_loader").getAsString())) {
                         System.out.println("Downloading / updating OneCore loader...");
