@@ -3,6 +3,7 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '6.1.0'
     id "net.minecraftforge.gradle.forge" version "ddb1eb0"
     id "java"
+    id "maven-publish"
 }
 
 version = "1.2.0"
@@ -45,4 +46,27 @@ shadowJar {
     archiveClassifier.set('')
     configurations = [project.configurations.include]
     duplicatesStrategy DuplicatesStrategy.EXCLUDE
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = "cc.woverflow"
+            artifactId = "onecore-tweaker"
+            version = project.version
+
+            from(components["java"])
+        }
+    }
+
+    repositories {
+        maven {
+            name = "W-OVERFLOW"
+            url = "https://repo.woverflow.cc/releases"
+            credentials {
+                username = getProperty("woverflow.username")
+                password = getProperty("woverflow.password")
+            }
+        }
+    }
 }

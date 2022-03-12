@@ -45,12 +45,12 @@ public class InternetUtils {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                Sentry.captureError(e);
+                Sentry.captureException(e);
                 return false;
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Sentry.captureError(e);
+            Sentry.captureException(e);
             return false;
         }
         return true;
@@ -69,7 +69,7 @@ public class InternetUtils {
             return convertByteArrayToHexString(digest.digest());
         } catch (Exception e) {
             e.printStackTrace();
-            Sentry.captureError(e);
+            Sentry.captureException(e);
         }
         return "";
     }

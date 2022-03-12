@@ -18,17 +18,19 @@ public class OneCoreTweaker extends EssentialSetupTweaker {
 
     private ITweaker loader = null;
     
-    Sentry.init(options -> {
-        options.setDsn("https://4477f7a4c4c8432f9f757b2b1443de72@o1071772.ingest.sentry.io/6256057");
-        options.setTracesSampleRate(1.0);
-    });
+    public OneCoreTweaker() {
+        Sentry.init(options -> {
+            options.setDsn("https://4477f7a4c4c8432f9f757b2b1443de72@o1071772.ingest.sentry.io/6256057");
+            options.setTracesSampleRate(1.0);
+        });
+    }
 
     private static void showErrorScreen() {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
             e.printStackTrace();
-            Sentry.captureError(e);
+            Sentry.captureException(e);
         }
 
         JOptionPane.showMessageDialog(
@@ -45,7 +47,7 @@ public class OneCoreTweaker extends EssentialSetupTweaker {
             exit.invoke(null, 1);
         } catch (Exception e) {
             e.printStackTrace();
-            Sentry.captureError(e);
+            Sentry.captureException(e);
             System.exit(1);
         }
     }
@@ -90,7 +92,7 @@ public class OneCoreTweaker extends EssentialSetupTweaker {
                 }
             } catch (Throwable e) {
                 e.printStackTrace();
-                Sentry.captureError(e);
+                Sentry.captureException(e);
                 if (!loadLocation.exists()) {
                     showErrorScreen();
                 }
@@ -104,7 +106,7 @@ public class OneCoreTweaker extends EssentialSetupTweaker {
                 loader = ((ITweaker) Launch.classLoader.findClass(json == null ? "cc.woverflow.onecore.loader.OneCoreLoader" : json.getAsJsonObject("classpath").get("loader").getAsString()).newInstance());
             } catch (Throwable e) {
                 e.printStackTrace();
-                Sentry.captureError(e);
+                Sentry.captureException(e);
                 showErrorScreen();
             }
         }
