@@ -5,7 +5,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
-import io.sentry.Sentry;
 
 public class InternetUtils {
     public static InputStream setupConnection(String url) throws IOException {
@@ -45,12 +44,10 @@ public class InternetUtils {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                Sentry.captureException(e);
                 return false;
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Sentry.captureException(e);
             return false;
         }
         return true;
@@ -69,7 +66,6 @@ public class InternetUtils {
             return convertByteArrayToHexString(digest.digest());
         } catch (Exception e) {
             e.printStackTrace();
-            Sentry.captureException(e);
         }
         return "";
     }
