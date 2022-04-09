@@ -11,7 +11,7 @@ public class InternetUtils {
         HttpURLConnection connection = ((HttpURLConnection) new URL(url).openConnection());
         connection.setRequestMethod("GET");
         connection.setUseCaches(false);
-        connection.addRequestProperty("User-Agent", "OneCoreLoader/1.2.2");
+        connection.addRequestProperty("User-Agent", "OneCoreLoader/1.4.1");
         connection.setReadTimeout(5000);
         connection.setConnectTimeout(5000);
         connection.setDoOutput(true);
